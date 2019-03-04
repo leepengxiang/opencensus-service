@@ -102,6 +102,7 @@ type Receivers struct {
 	Zipkin     *ReceiverConfig       `mapstructure:"zipkin"`
 	Jaeger     *ReceiverConfig       `mapstructure:"jaeger"`
 	Scribe     *ScribeReceiverConfig `mapstructure:"zipkin-scribe"`
+	Postgres *postgresreceiver.Config `mapstructure:"postgres"`
 
 	// Prometheus contains the Prometheus configurations.
 	// Such as:
@@ -112,8 +113,6 @@ type Receivers struct {
 	//          static_configs:
 	//              - targets: ['localhost:9988']
 	Prometheus *prometheusreceiver.Configuration `mapstructure:"prometheus"`
-
-	Postgres *postgresreceiver.Config `mapstructure:"postgres"`
 }
 
 // ReceiverConfig is the per-receiver configuration that identifies attributes
