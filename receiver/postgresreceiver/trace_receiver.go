@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	commonpb "github.com/census-instrumentation/opencensus-proto/gen-go/agent/common/v1"
@@ -60,7 +61,8 @@ func (pgr *PostgresReceiver) ProcessExecutionPlan(nextProcessor processor.TraceD
 		var counter int
 		var plan_str string
 		if err := rows.Scan(&counter, &plan_str); err != nil {
-			log.Fatal(err)
+			log.Println("Scan row failed: ", err)
+			continue
 		}
 		log.Println(counter)
 		log.Println(plan_str)
@@ -71,12 +73,12 @@ func (pgr *PostgresReceiver) ProcessExecutionPlan(nextProcessor processor.TraceD
 			log.Println("Unmarshal execution plan failed: ", err)
 			continue
 		}
-		connection_id, spans := parseExecutionPlan(message)
+		spans := parseExecutionPlan(message)
 		td := data.TraceData{
 			Node: &commonpb.Node{
 				Identifier: &commonpb.ProcessIdentifier{
 					HostName: "PostgreSQL",
-					Pid:      uint32(connection_id),
+					Pid:      uint32(os.Getpid()),
 				},
 			},
 			Spans: spans,
@@ -85,7 +87,7 @@ func (pgr *PostgresReceiver) ProcessExecutionPlan(nextProcessor processor.TraceD
 	}
 }
 
-func parseExecutionPlan(message interface{}) (int64, []*tracepb.Span) {
+func parseExecutionPlan(message interface{}) []*tracepb.Span {
 	plan := message.(map[string]interface{})
 
 	trace_id := generateTraceId()
@@ -116,7 +118,7 @@ func parseExecutionPlan(message interface{}) (int64, []*tracepb.Span) {
 
 	_, spans := parseChildPlan(plan["Plan"], start_time, trace_id, span_id)
 	spans = append(spans, root_span)
-	return backend_pid, spans
+	return spans
 }
 
 func generateTraceId() []byte {
