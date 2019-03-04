@@ -19,10 +19,14 @@ import (
 
 	"github.com/census-instrumentation/opencensus-service/data"
 	"github.com/census-instrumentation/opencensus-service/exporter"
+	"github.com/census-instrumentation/opencensus-service/observability"
 	"go.uber.org/zap"
 )
 
-const exportFormat = "LoggingExporter"
+const (
+	traceExportFormat   = "logging_trace"
+	metricsExportFormat = "logging_metrics"
+)
 
 // A logging exporter that does not sends the data to any destination but logs debugging messages.
 type loggingExporter struct{ logger *zap.Logger }
@@ -30,22 +34,28 @@ type loggingExporter struct{ logger *zap.Logger }
 var _ exporter.TraceExporter = (*loggingExporter)(nil)
 var _ exporter.MetricsExporter = (*loggingExporter)(nil)
 
-func (sp *loggingExporter) ProcessTraceData(ctx context.Context, td data.TraceData) error {
-	// TODO: Record metrics
+func (le *loggingExporter) ProcessTraceData(ctx context.Context, td data.TraceData) error {
+	le.logger.Debug("loggingTraceExporter", zap.Int("#spans", len(td.Spans)))
 	// TODO: Add ability to record the received data
-	sp.logger.Debug("loggingTraceExporter", zap.Int("#spans", len(td.Spans)))
+
+	// Even though we just log all the spans, we record 0 dropped spans.
+	observability.RecordTraceExporterMetrics(observability.ContextWithExporterName(ctx, traceExportFormat), len(td.Spans), 0)
 	return nil
 }
 
-func (sp *loggingExporter) ProcessMetricsData(ctx context.Context, md data.MetricsData) error {
-	sp.logger.Debug("loggingMetricsExporter", zap.Int("#metrics", len(md.Metrics)))
-	// TODO: Record metrics
+func (le *loggingExporter) ProcessMetricsData(ctx context.Context, md data.MetricsData) error {
+	le.logger.Debug("loggingMetricsExporter", zap.Int("#metrics", len(md.Metrics)))
 	// TODO: Add ability to record the received data
+	// TODO: Record metrics
 	return nil
 }
 
-func (sp *loggingExporter) ExportFormat() string {
-	return exportFormat
+func (le *loggingExporter) TraceExportFormat() string {
+	return traceExportFormat
+}
+
+func (le *loggingExporter) MetricsExportFormat() string {
+	return metricsExportFormat
 }
 
 // NewTraceExporter creates an exporter.TraceExporter that just drops the

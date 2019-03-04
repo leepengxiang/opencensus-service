@@ -16,7 +16,6 @@ package exportertest
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 
 	"github.com/census-instrumentation/opencensus-service/data"
@@ -41,11 +40,14 @@ func (ste *SinkTraceExporter) ProcessTraceData(ctx context.Context, td data.Trac
 	return nil
 }
 
-const sinkExportFormat = "SinkExporter"
+const (
+	sinkTraceExportFormat   = "sink_trace"
+	sinkMetricsExportFormat = "sink_metrics"
+)
 
-// ExportFormat retruns the name of this TraceExporter
-func (ste *SinkTraceExporter) ExportFormat() string {
-	return sinkExportFormat
+// TraceExportFormat retruns the name of this TraceExporter
+func (ste *SinkTraceExporter) TraceExportFormat() string {
+	return sinkTraceExportFormat
 }
 
 // AllTraces returns the traces sent to the test sink.
@@ -74,9 +76,9 @@ func (sme *SinkMetricsExporter) ProcessMetricsData(ctx context.Context, md data.
 	return nil
 }
 
-// ExportFormat retruns the name of this TraceExporter
-func (sme *SinkMetricsExporter) ExportFormat() string {
-	return sinkExportFormat
+// MetricsExportFormat retruns the name of this MetricsExporter
+func (sme *SinkMetricsExporter) MetricsExportFormat() string {
+	return sinkMetricsExportFormat
 }
 
 // AllMetrics returns the metrics sent to the test sink.
@@ -85,10 +87,4 @@ func (sme *SinkMetricsExporter) AllMetrics() []data.MetricsData {
 	defer sme.mu.Unlock()
 
 	return sme.metrics[:]
-}
-
-// ToJSON marshals a generic interface to JSON to enable easy comparisons.
-func ToJSON(v interface{}) []byte {
-	b, _ := json.MarshalIndent(v, "", "  ")
-	return b
 }
