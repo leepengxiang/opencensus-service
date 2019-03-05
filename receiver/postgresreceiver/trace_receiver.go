@@ -125,13 +125,13 @@ func parseExecutionPlan(message interface{}) []*tracepb.Span {
 	attributes["database_name"] = stringToAttributeValue(plan["database_name"].(string))
 
 	root_span := &tracepb.Span{
-		TraceId:    trace_id,
-		SpanId:     span_id,
+		TraceId:      trace_id,
+		SpanId:       span_id,
 		ParentSpanId: nil,
-		Name:       &tracepb.TruncatableString{Value: "CloudSQLQuery"},
-		StartTime:  internal.TimeToTimestamp(start_time),
-		EndTime:    internal.TimeToTimestamp(end_time),
-		Attributes: &tracepb.Span_Attributes{AttributeMap: attributes},
+		Name:         &tracepb.TruncatableString{Value: "CloudSQLQuery"},
+		StartTime:    internal.TimeToTimestamp(start_time),
+		EndTime:      internal.TimeToTimestamp(end_time),
+		Attributes:   &tracepb.Span_Attributes{AttributeMap: attributes},
 	}
 
 	_, spans := parseChildPlan(plan["Plan"], start_time, trace_id, span_id)
@@ -192,9 +192,8 @@ func parseChildPlan(plan interface{}, trace_start_time time.Time, trace_id []byt
 
 	// Note that actual start time is the time when all the children has returned and this plan is ready to work.
 	// It is different with the google's way of a span start time.
-	start_offset := plan_map["Actual Startup Time"].(float64)
-	start_offset_us := int64(start_offset * 1000)
-	span_start_time := trace_start_time.Add(time.Duration(start_offset_us) * time.Microsecond)
+	start_offset_ms := plan_map["Actual Startup Time"].(float64)
+	span_start_time := trace_start_time.Add(time.Duration(start_offset_ms * float64(time.Millisecond)))
 	if plans := plan_map["Plans"]; plans != nil {
 		for _, child_plan := range plans.([]interface{}) {
 			child_span_start_time, child_spans := parseChildPlan(child_plan, trace_start_time, trace_id, span_id)
@@ -206,15 +205,13 @@ func parseChildPlan(plan interface{}, trace_start_time time.Time, trace_id []byt
 	}
 	span.StartTime = internal.TimeToTimestamp(span_start_time)
 
-	end_offset := plan_map["Actual Total Time"].(float64)
-	end_offset_us := int64(end_offset * 1000)
-	span_end_time := trace_start_time.Add(time.Duration(end_offset_us) * time.Microsecond)
+	end_offset_ms := plan_map["Actual Total Time"].(float64)
+	span_end_time := trace_start_time.Add(time.Duration(end_offset_ms * float64(time.Millisecond)))
 	if span_end_time.Equal(span_start_time) {
 		span_end_time = span_end_time.Add(time.Nanosecond)
 
 	}
 	span.EndTime = internal.TimeToTimestamp(span_end_time)
-
 
 	attributes := make(map[string]*tracepb.AttributeValue)
 	rows := plan_map["Actual Rows"].(float64)
@@ -230,6 +227,5 @@ func parseChildPlan(plan interface{}, trace_start_time time.Time, trace_id []byt
 	span.Attributes = &tracepb.Span_Attributes{AttributeMap: attributes}
 
 	spans = append(spans, &span)
-
 	return span_start_time, spans
 }
