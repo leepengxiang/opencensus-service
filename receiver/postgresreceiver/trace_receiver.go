@@ -127,7 +127,7 @@ func parseExecutionPlan(message interface{}) []*tracepb.Span {
 	root_span := &tracepb.Span{
 		TraceId:    trace_id,
 		SpanId:     span_id,
-		ParentSpanId: make([]byte, 8),
+		ParentSpanId: nil,
 		Name:       &tracepb.TruncatableString{Value: "CloudSQLQuery"},
 		StartTime:  internal.TimeToTimestamp(start_time),
 		EndTime:    internal.TimeToTimestamp(end_time),
@@ -209,7 +209,12 @@ func parseChildPlan(plan interface{}, trace_start_time time.Time, trace_id []byt
 	end_offset := plan_map["Actual Total Time"].(float64)
 	end_offset_us := int64(end_offset * 1000)
 	span_end_time := trace_start_time.Add(time.Duration(end_offset_us) * time.Microsecond)
+	if span_end_time.Equal(span_start_time) {
+		span_end_time = span_end_time.Add(time.Nanosecond)
+
+	}
 	span.EndTime = internal.TimeToTimestamp(span_end_time)
+
 
 	attributes := make(map[string]*tracepb.AttributeValue)
 	rows := plan_map["Actual Rows"].(float64)
