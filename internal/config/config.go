@@ -38,6 +38,7 @@ import (
 	"github.com/census-instrumentation/opencensus-service/exporter/zipkinexporter"
 	"github.com/census-instrumentation/opencensus-service/processor"
 	"github.com/census-instrumentation/opencensus-service/receiver/opencensusreceiver"
+	"github.com/census-instrumentation/opencensus-service/receiver/postgresreceiver"
 	"github.com/census-instrumentation/opencensus-service/receiver/prometheusreceiver"
 )
 
@@ -112,6 +113,8 @@ type Receivers struct {
 	//          static_configs:
 	//              - targets: ['localhost:9988']
 	Prometheus *prometheusreceiver.Configuration `yaml:"prometheus"`
+
+	Postgres *postgresreceiver.Config `yaml:"postgres"`
 }
 
 // ReceiverConfig is the per-receiver configuration that identifies attributes
@@ -281,6 +284,17 @@ func (c *Config) PrometheusConfiguration() *prometheusreceiver.Configuration {
 		return nil
 	}
 	return c.Receivers.Prometheus
+}
+
+func (c *Config) PostgresReceiverEnabled() bool {
+	return c != nil && c.Receivers != nil && c.Receivers.Postgres != nil
+}
+
+func (c *Config) PostgresReceiverConfig() *postgresreceiver.Config {
+	if c == nil || c.Receivers == nil {
+		return nil
+	}
+	return c.Receivers.Postgres
 }
 
 // ZipkinReceiverAddress is a helper to safely retrieve the address

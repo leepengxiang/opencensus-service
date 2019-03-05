@@ -1,3 +1,9 @@
+receivers:
+        postgres:
+                conn_str: "user=postgres dbname=postgres sslmode=disable"
+                init_command: "create extension if not exists google_insights"
+                pull_command: "select * from google_trace()/* DO NOT TRACE */"
+                pull_interval: 10s
 exporters:
         stackdriver:
                 project: "cloud-debugging"

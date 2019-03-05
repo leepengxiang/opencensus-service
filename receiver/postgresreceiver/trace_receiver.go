@@ -18,27 +18,44 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type PostgresReceiver struct {
-	db *sql.DB
+type Config struct {
+	// The connect string for PostgreSQL
+	ConnStr string `yaml:"conn_str"`
+	// The SQL query to execute for initialization.
+	InitCommand string `yaml:"init_command"`
+	// The SQL query to execute for pulling traces
+	PullCommand string `yaml:"pull_command"`
+	// How frequent should the command be executed
+	PullInterval time.Duration `yaml:"pull_interval"`
 }
 
-func New() *PostgresReceiver {
-	connStr := "user=postgres dbname=postgres sslmode=disable"
-	db, err := sql.Open( /* driver = */ "postgres", connStr)
+type PostgresReceiver struct {
+	db           *sql.DB
+	pullCommand  string
+	pullInterval time.Duration
+}
+
+func New(config *Config) (*PostgresReceiver, error) {
+	db, err := sql.Open( /* driver = */ "postgres", config.ConnStr)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
-	_, err = db.Exec("create extension if not exists google_insights")
-	if err != nil {
-		log.Fatal(err)
+	if _, err = db.Exec(config.InitCommand); err != nil {
+		log.Println(err)
+		return nil, err
 	}
 	log.Println("Connected to postgres. Extension created.")
-	return &PostgresReceiver{db: db}
+	return &PostgresReceiver{
+		db:           db,
+		pullCommand:  config.PullCommand,
+		pullInterval: config.PullInterval,
+	}, nil
 }
 
 func (pgr *PostgresReceiver) StartTraceReception(ctx context.Context, nextProcessor processor.TraceDataProcessor) error {
 	go func() {
-		for range time.Tick(10 * time.Second) {
+		for range time.Tick(pgr.pullInterval) {
 			pgr.ProcessExecutionPlan(nextProcessor)
 		}
 
@@ -51,7 +68,7 @@ func (pgr *PostgresReceiver) StopTraceReception(ctx context.Context) error {
 }
 
 func (pgr *PostgresReceiver) ProcessExecutionPlan(nextProcessor processor.TraceDataProcessor) {
-	rows, err := pgr.db.Query("select * from google_trace()/* DO NOT TRACE */")
+	rows, err := pgr.db.Query(pgr.pullCommand)
 	if err != nil {
 		log.Fatal(err)
 	}
