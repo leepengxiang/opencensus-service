@@ -127,6 +127,7 @@ func parseExecutionPlan(message interface{}) []*tracepb.Span {
 	root_span := &tracepb.Span{
 		TraceId:    trace_id,
 		SpanId:     span_id,
+		ParentSpanId: make([]byte, 8),
 		Name:       &tracepb.TruncatableString{Value: "CloudSQLQuery"},
 		StartTime:  internal.TimeToTimestamp(start_time),
 		EndTime:    internal.TimeToTimestamp(end_time),

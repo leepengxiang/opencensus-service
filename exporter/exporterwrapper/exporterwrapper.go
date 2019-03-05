@@ -23,6 +23,8 @@ package exporterwrapper
 
 import (
 	"context"
+	"encoding/binary"
+	"log"
 
 	"go.opencensus.io/trace"
 
@@ -80,6 +82,12 @@ func PushOcProtoSpansToOCTraceExporter(ocExporter trace.Exporter, td data.TraceD
 	var errs []error
 	var goodSpans []*tracepb.Span
 	for _, span := range td.Spans {
+		log.Printf("Trace ID: %x%x\tSpan ID: %x\tParent Span ID: %x\tName: %s\n",
+			binary.LittleEndian.Uint64(span.TraceId[0:8]),
+			binary.LittleEndian.Uint64(span.TraceId[8:16]),
+			binary.LittleEndian.Uint64(span.SpanId),
+			binary.LittleEndian.Uint64(span.ParentSpanId),
+			span.Name.Value)
 		sd, err := spandatatranslator.ProtoSpanToOCSpanData(span)
 		if err == nil {
 			ocExporter.ExportSpan(sd)
@@ -88,6 +96,10 @@ func PushOcProtoSpansToOCTraceExporter(ocExporter trace.Exporter, td data.TraceD
 			errs = append(errs, err)
 		}
 	}
+	log.Printf("spans: %d\tgoogle spans: %d\n", len(td.Spans), len(goodSpans))
+	log.Printf("https://pantheon.corp.google.com/traces/traces?project=cloud-debugging&tid=%x%x\n",
+		binary.LittleEndian.Uint64(goodSpans[0].TraceId[0:8]),
+		binary.LittleEndian.Uint64(goodSpans[0].TraceId[8:16]))
 
 	return internal.CombineErrors(errs)
 }
