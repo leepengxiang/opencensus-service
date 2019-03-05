@@ -92,7 +92,7 @@ func PushOcProtoSpansToOCTraceExporter(ocExporter trace.Exporter, td data.TraceD
 			errs = append(errs, err)
 		}
 	}
-	log.Printf("spans: %d\tgoogle spans: %d\n", len(td.Spans), len(goodSpans))
+	log.Printf("spans: %d\tgood spans: %d\n", len(td.Spans), len(goodSpans))
 	log.Printf("https://pantheon.corp.google.com/traces/traces?project=cloud-debugging&tid=%x%x\n",
 		binary.BigEndian.Uint64(goodSpans[0].TraceId[0:8]),
 		binary.BigEndian.Uint64(goodSpans[0].TraceId[8:16]))

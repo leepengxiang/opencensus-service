@@ -209,7 +209,6 @@ func parseChildPlan(plan interface{}, trace_start_time time.Time, trace_id []byt
 	span_end_time := trace_start_time.Add(time.Duration(end_offset_ms * float64(time.Millisecond)))
 	if span_end_time.Equal(span_start_time) {
 		span_end_time = span_end_time.Add(time.Nanosecond)
-
 	}
 	span.EndTime = internal.TimeToTimestamp(span_end_time)
 
