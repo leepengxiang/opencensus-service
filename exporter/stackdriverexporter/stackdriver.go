@@ -78,7 +78,7 @@ func StackdriverTraceExportersFromViper(v *viper.Viper) (tdps []processor.TraceD
 		// "If you want to write more than one point to the same time series, then use a separate call
 		//  to the timeSeries.create method for each point. Don't make the calls faster than one time per
 		//  minute. If you are adding data points to different time series, then there is no rate limitation."
-		BundleDelayThreshold: 61 * time.Second,
+		BundleDelayThreshold: 5 * time.Second,
 	})
 	if serr != nil {
 		return nil, nil, nil, fmt.Errorf("Cannot configure Stackdriver Trace exporter: %v", serr)
