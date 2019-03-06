@@ -98,11 +98,11 @@ type Config struct {
 // * Prometheus (metrics)
 // * Zipkin (traces)
 type Receivers struct {
-	OpenCensus *ReceiverConfig       `mapstructure:"opencensus"`
-	Zipkin     *ReceiverConfig       `mapstructure:"zipkin"`
-	Jaeger     *ReceiverConfig       `mapstructure:"jaeger"`
-	Scribe     *ScribeReceiverConfig `mapstructure:"zipkin-scribe"`
-	Postgres *postgresreceiver.Config `mapstructure:"postgres"`
+	OpenCensus *ReceiverConfig          `mapstructure:"opencensus"`
+	Zipkin     *ReceiverConfig          `mapstructure:"zipkin"`
+	Jaeger     *ReceiverConfig          `mapstructure:"jaeger"`
+	Scribe     *ScribeReceiverConfig    `mapstructure:"zipkin-scribe"`
+	Postgres   *postgresreceiver.Config `mapstructure:"postgres"`
 
 	// Prometheus contains the Prometheus configurations.
 	// Such as:
