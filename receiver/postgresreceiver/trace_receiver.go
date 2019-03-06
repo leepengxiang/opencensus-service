@@ -20,13 +20,13 @@ import (
 
 type Config struct {
 	// The connect string for PostgreSQL
-	ConnStr string `yaml:"conn_str"`
+	ConnStr string `mapstructure:"conn_str"`
 	// The SQL query to execute for initialization.
-	InitCommand string `yaml:"init_command"`
+	InitCommand string `mapstructure:"init_command"`
 	// The SQL query to execute for pulling traces
-	PullCommand string `yaml:"pull_command"`
+	PullCommand string `mapstructure:"pull_command"`
 	// How frequent should the command be executed
-	PullInterval time.Duration `yaml:"pull_interval"`
+	PullInterval time.Duration `mapstructure:"pull_interval"`
 }
 
 type PostgresReceiver struct {
