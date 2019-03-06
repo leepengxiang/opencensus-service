@@ -41,10 +41,10 @@ import (
 	"github.com/census-instrumentation/opencensus-service/processor"
 	"github.com/census-instrumentation/opencensus-service/receiver/jaegerreceiver"
 	"github.com/census-instrumentation/opencensus-service/receiver/opencensusreceiver"
+	"github.com/census-instrumentation/opencensus-service/receiver/postgresreceiver"
 	"github.com/census-instrumentation/opencensus-service/receiver/prometheusreceiver"
 	"github.com/census-instrumentation/opencensus-service/receiver/zipkinreceiver"
 	"github.com/census-instrumentation/opencensus-service/receiver/zipkinreceiver/scribe"
-	"github.com/census-instrumentation/opencensus-service/receiver/postgresreceiver"
 )
 
 var rootCmd = &cobra.Command{
